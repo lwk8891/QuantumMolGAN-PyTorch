@@ -28,9 +28,9 @@ data/gdb9_9nodes.sparsedataset
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-data/__pycache__
-models/__pycache__
-utils/__pycache__
+data/__pycache__/
+models/__pycache__/
+utils/__pycache__/
 *.py[cod]
 *$py.class
 
