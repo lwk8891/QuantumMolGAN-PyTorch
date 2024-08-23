@@ -9,9 +9,14 @@ from rdkit.Chem import QED
 from rdkit.Chem import Crippen
 from rdkit.Chem import AllChem
 from rdkit.Chem import Draw
+from rdkit.Chem.rdMolDescriptors import CalcNumBridgeheadAtoms, CalcNumAromaticRings
+from rdkit.Chem.rdmolops import AssignStereochemistry
+from rdkit.Chem.rdmolfiles import SDWriter
+from utils.mce18 import MCE18
 
 import math
 import numpy as np
+import os
 
 from utils.utils_io import random_string
 
@@ -103,6 +108,26 @@ class MolecularMetrics(object):
     #
     #     return np.mean([float(Chem.MolToSmiles(m0_) == Chem.MolToSmiles(m1_)) if m1_ is not None else 0
     #             for m0_, m1_ in zip(m0, m1)])
+
+    @staticmethod
+    def bridgehead_score(mols):
+        bridgehead_nums = np.array(list(map(lambda x: CalcNumBridgeheadAtoms(x) if x else 0, mols)))
+        return (bridgehead_nums < 3).astype(int)
+    
+    @staticmethod
+    def aromaticring_score(mols):
+        mean_num_aromatic_rings_in_WP_PARP = 2
+        aromaticring_nums = np.array(list(map(lambda x: CalcNumAromaticRings(x) if x else 0, mols)))
+        return (aromaticring_nums > mean_num_aromatic_rings_in_WP_PARP).astype(int)
+    
+    @staticmethod
+    def mce18_score(mols):
+        for mol in mols:
+            if mol:
+                AssignStereochemistry(mol)
+        
+        mce18 = np.array(list(map(lambda x: MCE18(x).CalculateMCE18() if x else 0, mols)))
+        return (mce18 > 45.0).astype(int)
 
     @staticmethod
     def natural_product_scores(mols, norm=False):
@@ -267,9 +292,18 @@ def all_scores(mols, data, norm=False, reconstruction=False):
 def save_mol_img(mols, f_name='tmp.png', is_test=False):
     print('Generating molecules...')
     orig_f_name = f_name
+
+    f_name_smiles = f'{os.path.splitext(orig_f_name)[0]}.smi'
+    f_name_sdf = f'{os.path.splitext(orig_f_name)[0]}.sdf'
+
+    smiles_list = []
+
+    writer = SDWriter(f_name_sdf)
+
     for a_mol in mols:
         try:
-            if Chem.MolToSmiles(a_mol) is not None:
+            smiles = Chem.MolToSmiles(a_mol)
+            if smiles is not None:
                 if is_test:
                     f_name = orig_f_name
                     f_split = f_name.split('.')
@@ -285,5 +319,14 @@ def save_mol_img(mols, f_name='tmp.png', is_test=False):
 
                 # if not is_test:
                 #     break
+                smiles_list.append(smiles)
+                writer.write(a_mol)
         except:
             continue
+
+    writer.close()
+
+    with open(f_name_smiles, 'w') as f:
+        f.write('\n'.join(smiles_list))
+
+    

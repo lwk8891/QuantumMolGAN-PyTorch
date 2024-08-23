@@ -17,6 +17,7 @@ from utils.utils import *
 from models.models import Generator, Discriminator
 from data.sparse_molecular_dataset import SparseMolecularDataset
 from utils.logger import Logger
+from utils.dfs import is_connected
 
 
 from frechetdist import frdist
@@ -38,7 +39,9 @@ class Solver(object):
 
     def __init__(self, config, log=None):
         """Initialize configurations"""
-
+        # Random seed
+        np.random.seed(65535)
+        
         # Log
         self.log = log
 
@@ -222,7 +225,7 @@ class Solver(object):
                                    create_graph=True,
                                    only_inputs=True)[0]
         dydx = dydx.view(dydx.size(0), -1)
-        dydx_l2norm = torch.sqrt(torch.sum(dydx ** 2, dim=1))
+        dydx_l2norm = torch.sqrt(torch.clamp(torch.sum(dydx ** 2, dim=1), min=1e-4)) # We fixed the minimum of sqrt variable as 1e-4 to prohibit nan
         return torch.mean((dydx_l2norm - 1) ** 2)
 
     def label2onehot(self, labels, dim):
@@ -255,6 +258,9 @@ class Solver(object):
     def reward(self, mols):
         """Calculate the rewards of mols"""
         rr = 1.
+        rr *= MolecularMetrics.aromaticring_score(mols)
+        #rr *= MolecularMetrics.bridgehead_score(mols)
+        #rr *= MolecularMetrics.mce18_score(mols)
         for m in ('logp,sas,qed,unique' if self.metric == 'all' else self.metric).split(','):
             if m == 'np':
                 rr *= MolecularMetrics.natural_product_scores(mols, norm=True)
@@ -322,7 +328,10 @@ class Solver(object):
         (edges_hard, nodes_hard) = self.postprocess((e_hat, n_hat), method)
         edges_hard, nodes_hard = torch.max(edges_hard, -1)[1], torch.max(nodes_hard, -1)[1]
         mols = [self.data.matrices2mol(n_.data.cpu().numpy(), e_.data.cpu().numpy(), strict=True) for e_, n_ in zip(edges_hard, nodes_hard)]
-        reward = torch.from_numpy(self.reward(mols)).to(self.device)
+        connected = np.array([is_connected(n_.data.cpu().numpy(), e_.data.cpu().numpy()) for e_, n_ in zip(edges_hard, nodes_hard)])
+        mol_reward = self.reward(mols)
+        cpu_reward = mol_reward*connected
+        reward = torch.from_numpy(cpu_reward).to(self.device)
         return reward
 
     def save_checkpoints(self, epoch_i):
@@ -384,13 +393,34 @@ class Solver(object):
             elif train_val_test == 'val' and self.quantum:
                 if self.test_sample_size is None:
                     mols, _, _, a, x, _, _, _, _ = self.data.next_validation_batch()
-                    sample_list = [self.gen_circuit(self.gen_weights) for i in range(a.shape[0])]
+                    sample_list = []
+                    for i in range(a.shape[0]):
+                        c = self.gen_circuit(self.gen_weights)
+                        if type(c) == torch.Tensor:
+                            sample_list.append(c)
+                        elif type(c) == list:
+                            sample_list.append(torch.stack(c))
+                    #sample_list = [self.gen_circuit(self.gen_weights) for i in range(a.shape[0])]
                 else:
                     mols, _, _, a, x, _, _, _, _ = self.data.next_validation_batch(self.test_sample_size)
-                    sample_list = [self.gen_circuit(self.gen_weights) for i in range(self.test_sample_size)]
+                    sample_list = []
+                    for i in range(self.test_sample_size):
+                        c = self.gen_circuit(self.gen_weights)
+                        if type(c) == torch.Tensor:
+                            sample_list.append(c)
+                        elif type(c) == list:
+                            sample_list.append(torch.stack(c))
+                    #sample_list = [self.gen_circuit(self.gen_weights) for i in range(self.test_sample_size)]
             elif train_val_test == 'train' and self.quantum:
                 mols, _, _, a, x, _, _, _, _ = self.data.next_train_batch(self.batch_size)
-                sample_list = [self.gen_circuit(self.gen_weights) for i in range(self.batch_size)]
+                sample_list = []
+                for i in range(self.batch_size):
+                    c = self.gen_circuit(self.gen_weights)
+                    if type(c) == torch.Tensor:
+                        sample_list.append(c)
+                    elif type(c) == list:
+                        sample_list.append(torch.stack(c))
+                #sample_list = [self.gen_circuit(self.gen_weights) for i in range(self.batch_size)]
 
             # Error
             else:
@@ -402,7 +432,7 @@ class Solver(object):
             a_tensor = self.label2onehot(a, self.b_dim)
             x_tensor = self.label2onehot(x, self.m_dim)
             
-            ax_tensor = upper(a_tensor, x_tensor)
+            # ax_tensor = upper(a_tensor, x_tensor)
 
             if self.quantum:
                 z = torch.stack(tuple(sample_list)).to(self.device).float()
