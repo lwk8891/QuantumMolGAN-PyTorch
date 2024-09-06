@@ -9,6 +9,7 @@ from rdkit.Chem import QED
 from rdkit.Chem import Crippen
 from rdkit.Chem import AllChem
 from rdkit.Chem import Draw
+from rdkit.Chem import GetMolFrags
 
 import math
 import numpy as np
@@ -77,6 +78,10 @@ class MolecularMetrics(object):
         v = MolecularMetrics.valid_filter(mols)
         s = set(map(lambda x: Chem.MolToSmiles(x), v))
         return 0 if len(v) == 0 else len(s) / len(v)
+    
+    @staticmethod
+    def connectivity(mols):
+        return np.array(list(map(lambda x: 0 if x is None else x, [MolecularMetrics._avoid_sanitization_error(lambda: len(GetMolFrags(mol)) == 1) if mol is not None else None for mol in mols])))
 
     # @staticmethod
     # def novel_and_unique_total_score(mols, data):
