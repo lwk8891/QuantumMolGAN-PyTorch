@@ -104,7 +104,6 @@ if __name__ == '__main__':
     # to use pretrained quantum circuit or not
     # config.qc_pretrained = False
 
-
     # Training
     config.mode = 'train'
     # the complexity of generator
@@ -124,7 +123,9 @@ if __name__ == '__main__':
     # weight decay
     config.decay_every_epoch = 60
     config.gamma = 0.1
-
+    # RL reward suggested by medicinal chemist
+    # self.metric = 'sas,qed,unique'
+    config.metric = 'qed,unique,aromaticity'
 
     # # Testing
     # config.mode = "test"

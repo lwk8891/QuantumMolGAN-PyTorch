@@ -66,8 +66,7 @@ class Solver(object):
         self.post_method = config.post_method
 
         # RL reward suggested by medicinal chemist
-        # self.metric = 'sas,qed,unique'
-        self.metric = 'qed,unique,aromaticity'
+        self.metric = config.metric
 
         # Training configurations
         self.batch_size = config.batch_size
