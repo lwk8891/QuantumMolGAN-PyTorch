@@ -29,12 +29,14 @@ def main(config):
         config.log_dir_path = os.path.join(config.saving_dir, config.mode, 'log_dir')
         config.model_dir_path = os.path.join(config.saving_dir, config.mode, 'model_dir')
         config.img_dir_path = os.path.join(config.saving_dir, config.mode, 'img_dir')
+        config.smi_dir_path = os.path.join(config.saving_dir, config.mode, 'smi_dir')
     else:
         a_test_time = get_date_postfix()
         config.saving_dir = os.path.join(config.saving_dir)
         config.log_dir_path = os.path.join(config.saving_dir, 'post_test', a_test_time, 'log_dir')
         config.model_dir_path = os.path.join(config.saving_dir, 'model_dir')
         config.img_dir_path = os.path.join(config.saving_dir, 'post_test', a_test_time, 'img_dir')
+        config.smi_dir_path = os.path.join(config.saving_dir, 'post_test', a_test_time, 'smi_dir')
 
 
     # Create directories if not exist
@@ -44,6 +46,8 @@ def main(config):
         os.makedirs(config.model_dir_path)
     if not os.path.exists(config.img_dir_path):
         os.makedirs(config.img_dir_path)
+    if not os.path.exists(config.smi_dir_path):
+        os.makedirs(config.smi_dir_path)
 
     # Logger
     if config.mode == 'train':
@@ -76,12 +80,12 @@ if __name__ == '__main__':
     config = get_GAN_config()
 
     # GPU
-    os.environ["CUDA_VISIBLE_DEVICES"]="5"
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 
     # Dataset
     # molecule dataset dir
-    config.mol_data_dir = r'data/gdb9_9nodes.sparsedataset'
+    config.mol_data_dir = r'data/KRAS_wp_docking_compounds(68885)_25nodes.sparsedataset'
     #config.mol_data_dir = r'data/qm9_5k.sparsedataset'
 
 
@@ -89,7 +93,7 @@ if __name__ == '__main__':
     # quantum circuit to generate inputs of MolGAN
     config.quantum = False
     # number of qubit of quantum circuit
-    config.qubits = 8
+    config.qubits = 4
     # number of layer of quantum circuit
     config.layer = 3
     # update the parameters of quantum circuit
@@ -104,34 +108,34 @@ if __name__ == '__main__':
     # Training
     config.mode = 'train'
     # the complexity of generator
-    config.complexity = 'mr'
+    config.complexity = 'hr'
     # batch size
-    config.batch_size = 16
+    config.batch_size = 64
     # input noise dimension
     config.z_dim = 8
     # number of epoch
-    config.num_epochs = 300
+    config.num_epochs = 150
     # n_critic
     config.n_critic = 3
     # critic type
     config.critic_type = 'D'
     # 1.0 for pure WGAN and 0.0 for pure RL
-    config.lambda_wgan = 1
+    config.lambda_wgan = 0.5
     # weight decay
     config.decay_every_epoch = 60
     config.gamma = 0.1
 
 
-    # Testing
-    #config.mode = "test"
-    #config.complexity = 'mr'
-    #config.test_sample_size = 5000
-    #config.z_dim = 8
-    #config.test_epoch = 30
-    # MolGAN
-    #config.saving_dir = r"results/GAN/20211014_151730/train"
-    # Quantum
-    #config.saving_dir = r"results/quantum-GAN/20211130_102404/train"
+    # # Testing
+    # config.mode = "test"
+    # config.complexity = 'nr'
+    # config.test_sample_size = 4859 # train 38879, validation 4859, test 4859 total 48597
+    # config.z_dim = 4
+    # config.test_epoch = 150
+    # # MolGAN
+    # config.saving_dir = r"results/GAN/20240921_153400/train"
+    # # Quantum
+    # #config.saving_dir = r"results/quantum-GAN/20211130_102404/train"
 
 
     if config.complexity == 'nr':

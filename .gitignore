@@ -25,6 +25,7 @@ data/SA_score.pkl.gz
 data/gdb9.sdf
 data/gdb9.sdf.csv
 data/gdb9_9nodes.sparsedataset
+data/KRAS_wp_docking_compounds(68885).sdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

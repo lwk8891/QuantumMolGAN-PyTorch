@@ -7,6 +7,7 @@ from rdkit import DataStructs
 from rdkit import Chem
 from rdkit.Chem import QED
 from rdkit.Chem import Crippen
+from rdkit.Chem import Lipinski
 from rdkit.Chem import AllChem
 from rdkit.Chem import Draw
 from rdkit.Chem import GetMolFrags
@@ -82,6 +83,10 @@ class MolecularMetrics(object):
     @staticmethod
     def connectivity(mols):
         return np.array(list(map(lambda x: 0 if x is None else x, [MolecularMetrics._avoid_sanitization_error(lambda: len(GetMolFrags(mol)) == 1) if mol is not None else None for mol in mols])))
+    
+    @staticmethod
+    def aromatic_rings(mols):
+        return np.array(list(map(lambda x: 0 if x is None else x, [MolecularMetrics._avoid_sanitization_error(lambda: Chem.rdMolDescriptors.CalcNumAromaticRings(mol) >= 2) if mol is not None else None for mol in mols])))
 
     # @staticmethod
     # def novel_and_unique_total_score(mols, data):
@@ -111,13 +116,24 @@ class MolecularMetrics(object):
 
     @staticmethod
     def natural_product_scores(mols, norm=False):
-
         # calculating the score
-        scores = [sum(NP_model.get(bit, 0)
-                      for bit in Chem.rdMolDescriptors.GetMorganFingerprint(mol,
-                                                                            2).GetNonzeroElements()) / float(
-            mol.GetNumAtoms()) if mol is not None else None
-                  for mol in mols]
+        scores = []
+        for mol in mols:
+            if mol is not None:
+                bits = Chem.rdMolDescriptors.GetMorganFingerprint(mol, 2).GetNonzeroElements()
+                score = 0
+                natoms = float(mol.GetNumAtoms())
+                for bit in bits:
+                    score += NP_model.get(bit, 0)
+                score /= natoms
+                scores.append(score)
+            else:
+                scores.append(None)
+        # scores = [sum(NP_model.get(bit, 0)
+        #             for bit in Chem.rdMolDescriptors.GetMorganFingerprint(mol,
+        #                                                                     2).GetNonzeroElements()) / float(
+        #     mol.GetNumAtoms()) if mol is not None else None
+        #         for mol in mols]
 
         # preventing score explosion for exotic molecules
         scores = list(map(lambda score: score if score is None else (
@@ -155,7 +171,10 @@ class MolecularMetrics(object):
             nf += v
             sfp = bitId
             score1 += SA_model.get(sfp, -4) * v
-        score1 /= nf
+        if nf != 0:
+            score1 /= nf
+        else:
+            score1 = 10.0
 
         # features score
         nAtoms = mol.GetNumAtoms()
@@ -292,3 +311,24 @@ def save_mol_img(mols, f_name='tmp.png', is_test=False):
                 #     break
         except:
             continue
+
+def save_mol_smi(mols, f_name='tmp.png', is_test=False):
+    print('Generating molecules...')
+    smiles = []
+    for a_mol in mols:
+        try:
+            if Chem.MolToSmiles(a_mol) is not None:
+                a_smi = Chem.MolToSmiles(a_mol)
+                mol_graph = read_smiles(a_smi)
+
+                # break only give you one image
+                # break
+
+                # if not is_test:
+                #     break
+                smiles.append(a_smi)
+        except:
+            continue
+
+    with open(f_name, 'w') as f:
+        f.write('\n'.join(smiles))

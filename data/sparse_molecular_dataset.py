@@ -29,7 +29,7 @@ class SparseMolecularDataset():
         with open(filename, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-    def generate(self, filename, add_h=False, filters=lambda x: True, size=None, validation=0.1, test=0.1):
+    def generate(self, filename, kekulize=True, add_h=False, filters=lambda x: True, size=None, validation=0.1, test=0.1):
         self.log('Extracting {}..'.format(filename))
 
         if filename.endswith('.sdf'):
@@ -39,6 +39,12 @@ class SparseMolecularDataset():
 
         self.data = list(map(Chem.AddHs, self.data)) if add_h else self.data
         self.data = list(filter(filters, self.data))
+        if kekulize:
+            for i, mol in enumerate(self.data):
+                Chem.KekulizeIfPossible(mol)
+                if not mol:
+                    print(f'{i}th molecule is not valid after Kekulization')
+
         self.data = self.data[:size]
 
         self.log('Extracted {} out of {} molecules {}adding Hydrogen!'.format(len(self.data),
@@ -296,8 +302,8 @@ class SparseMolecularDataset():
 
 if __name__ == '__main__':
     data = SparseMolecularDataset()
-    data.generate('gdb9.sdf', filters=lambda x: x.GetNumAtoms() <= 9)
-    data.save('gdb9_9nodes.sparsedataset')
+    data.generate('data/KRAS_wp_docking_compounds(68885).sdf', filters=lambda x: x.GetNumAtoms() <= 25)
+    data.save('data/KRAS_wp_docking_compounds(68885)_25nodes.sparsedataset')
 
     # data = SparseMolecularDataset()
     # data.generate('data/qm9_5k.smi', validation=0.00021, test=0.00021)  # , filters=lambda x: x.GetNumAtoms() <= 9)

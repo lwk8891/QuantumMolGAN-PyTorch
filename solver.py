@@ -66,7 +66,8 @@ class Solver(object):
         self.post_method = config.post_method
 
         # RL reward suggested by medicinal chemist
-        self.metric = 'sas,qed,unique'
+        # self.metric = 'sas,qed,unique'
+        self.metric = 'qed,unique,aromaticity'
 
         # Training configurations
         self.batch_size = config.batch_size
@@ -108,6 +109,7 @@ class Solver(object):
         self.log_dir_path = config.log_dir_path
         self.model_dir_path = config.model_dir_path
         self.img_dir_path = config.img_dir_path
+        self.smi_dir_path = config.smi_dir_path
 
         # Step size to save the model
         self.model_save_step = config.model_save_step
@@ -275,6 +277,8 @@ class Solver(object):
                 rr *= MolecularMetrics.diversity_scores(mols, self.data)
             elif m == 'validity':
                 rr *= MolecularMetrics.valid_scores(mols)
+            elif m == 'aromaticity':
+                rr *= MolecularMetrics.aromatic_rings(mols)
             else:
                 raise RuntimeError('{} is not defined as a metric'.format(m))
         return rr.reshape(-1, 1)
@@ -618,6 +622,8 @@ class Solver(object):
                 # Saving molecule images
                 mol_f_name = os.path.join(self.img_dir_path, 'mol-{}.png'.format(epoch_i))
                 save_mol_img(mols, mol_f_name, is_test=self.mode == 'test')
+                mol_f_name = os.path.join(self.smi_dir_path, f'smiles-{epoch_i}.csv')
+                save_mol_smi(mols, mol_f_name, is_test=self.mode == 'test')
 
                 # Print out training information
                 et = time.time() - self.start_time
