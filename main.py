@@ -52,13 +52,13 @@ def main(config):
     # Logger
     if config.mode == 'train':
         log_p_name = os.path.join(config.log_dir_path, a_train_time + '_logger.log')
-        from imp import reload
+        from importlib import reload
         reload(logging)
         logging.basicConfig(filename=log_p_name, level=logging.INFO)
         logging.info(config)
     elif config.mode == 'test':
         log_p_name = os.path.join(config.log_dir_path, a_test_time + '_logger.log')
-        from imp import reload
+        from importlib import reload
         reload(logging)
         logging.basicConfig(filename=log_p_name, level=logging.INFO)
         logging.info(config)
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     # Dataset
     # molecule dataset dir
-    config.mol_data_dir = r'data/KRAS_wp_docking_compounds(68885)_25nodes.sparsedataset'
+    config.mol_data_dir = r'data/KRAS_wp_docking_compounds(68885)_30nodes.sparsedataset'
     #config.mol_data_dir = r'data/qm9_5k.sparsedataset'
 
 
