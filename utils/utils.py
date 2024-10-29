@@ -125,8 +125,11 @@ class MolecularMetrics(object):
                 natoms = float(mol.GetNumAtoms())
                 for bit in bits:
                     score += NP_model.get(bit, 0)
-                score /= natoms
-                scores.append(score)
+                if natoms != 0:
+                    score /= natoms
+                    scores.append(score)
+                else:
+                    scores.append(None)
             else:
                 scores.append(None)
         # scores = [sum(NP_model.get(bit, 0)

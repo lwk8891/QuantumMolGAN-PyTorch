@@ -106,43 +106,43 @@ if __name__ == '__main__':
     # config.qc_pretrained = False
 
     # Training
-    config.mode = 'train'
-    # the complexity of generator
-    config.complexity = 'nr'
-    # batch size
-    config.batch_size = 32
-    # input noise dimension
-    config.z_dim = 8
-    # number of epoch
-    config.num_epochs = 35
-    # resume epoch
-    # config.resume_epoch = 13
-    # resume target dir
-    # config.saving_dir = r"results/GAN/20241015_095323"
-    # n_critic
-    config.n_critic = 3
-    # critic type
-    config.critic_type = 'D'
-    # 1.0 for pure WGAN and 0.0 for pure RL
-    config.lambda_wgan = 0.5
-    # weight decay
-    config.decay_every_epoch = 60
-    config.gamma = 0.1
-    # RL reward suggested by medicinal chemist
-    # self.metric = 'sas,qed,unique'
-    config.metric = 'sas,qed,unique'
-
-    # # Testing
-    # config.mode = "test"
+    # config.mode = 'train'
+    # # the complexity of generator
     # config.complexity = 'mr'
-    # config.test_sample_size = 6888 # train 55108, validation 6888, test 6888 total 55108
+    # # batch size
+    # config.batch_size = 64
+    # # input noise dimension
     # config.z_dim = 4
-    # config.test_epoch = 150
-    # config.metric = 'qed,unique,aromaticity'
-    # # MolGAN
-    # config.saving_dir = r"results/GAN/20241018_175702/train"
-    # # Quantum
-    # #config.saving_dir = r"results/quantum-GAN/20211130_102404/train"
+    # # number of epoch
+    # config.num_epochs = 150
+    # # resume epoch
+    # # config.resume_epoch = 13
+    # # resume target dir
+    # # config.saving_dir = r"results/GAN/20241015_095323"
+    # # n_critic
+    # config.n_critic = 3
+    # # critic type
+    # config.critic_type = 'D'
+    # # 1.0 for pure WGAN and 0.0 for pure RL
+    # config.lambda_wgan = 0.5
+    # # weight decay
+    # config.decay_every_epoch = 60
+    # config.gamma = 0.1
+    # # RL reward suggested by medicinal chemist
+    # # self.metric = 'sas,qed,unique'
+    # config.metric = 'sas,qed,unique,aromaticity'
+
+    # Testing
+    config.mode = "test"
+    config.complexity = 'hr'
+    config.test_sample_size = 6888 # train ?, validation 6607, test 6607 total 66070?
+    config.z_dim = 8
+    config.test_epoch = 35
+    config.metric = 'qed,unique,aromaticity'
+    # MolGAN
+    config.saving_dir = r"results/GAN/20241025_180150/train"
+    # Quantum
+    #config.saving_dir = r"results/quantum-GAN/20211130_102404/train"
 
 
     if config.complexity == 'nr':

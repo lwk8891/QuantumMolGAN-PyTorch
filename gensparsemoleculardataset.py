@@ -22,7 +22,10 @@ def main():
         output_path = args.output
 
     moldata = SparseMolecularDataset()
-    moldata.generate(args.source, args.kekulization, args.add_hydrogen, filters=lambda x: x.GetNumAtoms() <= args.natom, validation=args.validation_rate, test=args.test_rate)
+    if args.natom == None:
+        moldata.generate(args.source, args.kekulization, args.add_hydrogen, validation=args.validation_rate, test=args.test_rate)
+    else:
+        moldata.generate(args.source, args.kekulization, args.add_hydrogen, filters=lambda x: x.GetNumAtoms() <= args.natom, validation=args.validation_rate, test=args.test_rate)
     moldata.save(output_path)
 
 if __name__ == '__main__':
