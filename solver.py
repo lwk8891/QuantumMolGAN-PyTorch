@@ -101,7 +101,7 @@ class Solver(object):
             self.logger = Logger(config.log_dir_path)
 
         # GPU
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
         print('Device: ', self.device, flush = True)
 
         # Directories

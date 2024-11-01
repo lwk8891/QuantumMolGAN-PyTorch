@@ -110,15 +110,15 @@ if __name__ == '__main__':
     # the complexity of generator
     config.complexity = 'nr'
     # batch size
-    config.batch_size = 32
+    config.batch_size = 16
     # input noise dimension
     config.z_dim = 8
     # number of epoch
     config.num_epochs = 35
     # resume epoch
-    # config.resume_epoch = 13
+    # config.resume_epoch = 1
     # resume target dir
-    # config.saving_dir = r"results/GAN/20241015_095323"
+    # config.saving_dir = r"results/GAN/20241030_092234/"
     # n_critic
     config.n_critic = 3
     # critic type

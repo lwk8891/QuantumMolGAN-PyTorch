@@ -134,13 +134,13 @@ if __name__ == '__main__':
 
     # Testing
     config.mode = "test"
-    config.complexity = 'hr'
-    config.test_sample_size = 6888 # train ?, validation 6607, test 6607 total 66070?
+    config.complexity = 'nr'
+    config.test_sample_size = 5000 # train ?, validation 6888, test 6888 total 66070?
     config.z_dim = 8
-    config.test_epoch = 35
+    # config.test_epoch = 35
     config.metric = 'qed,unique,aromaticity'
     # MolGAN
-    config.saving_dir = r"results/GAN/20241025_180150/train"
+    config.saving_dir = r"results/GAN/20241030_092234/train"
     # Quantum
     #config.saving_dir = r"results/quantum-GAN/20211130_102404/train"
 
